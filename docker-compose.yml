@@ -1,0 +1,41 @@
+version: "3.8"
+
+networks:
+  wp_network:
+    driver: bridge
+
+services:
+  wppconnect:
+    build:
+      context: .
+    image: jaygenttt/wp:0.1.2
+    volumes:
+      - ./tokens:/usr/src/wpp-server/tokens
+      - ./uploads:/src/wpp-server/uploads
+      - ./userDataDir:/src/wpp-server/userDataDir
+    environment:
+      - SECRET_KEY=${SECRET_KEY}
+      - QueueEnable=${QueueEnable}
+      - redisHost=${redisHost}
+      - redisPort=${redisPort}
+      - redisPassword=${redisPassword}
+      - LoggerLevel=${LoggerLevel}
+    ports:
+      - '21465:21465'
+    networks:
+      - wp_network
+  nginx:
+    image: nginx:latest
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/certs:/etc/nginx/certs
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - wppconnect
+    networks:
+      - wp_network
+volumes:
+  wppconnect_tokens: {}
+
